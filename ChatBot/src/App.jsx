@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { GoogleGenerativeAI } from "@google/generative-ai"; // Added import for GoogleGenerativeAI
+import './index.css';
+import './App.css';
 
-const genAI = new GoogleGenerativeAI('AIzaSyAm6nERIrTRqcMat7sJKGKByGqUG3FW94w'); // Initialize GoogleGenerativeAI
+const genAI = new GoogleGenerativeAI('AIzaSyAm6nERIrTRqcMat7sJKGKByGqUG3FW94w'); // Replace with your actual API key
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Get generative model
 
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const endOfMessagesRef = useRef(null); // Create a ref for the end of messages
 
   const handleSend = async () => {
     if (input.trim()) {
@@ -23,7 +26,6 @@ function App() {
         // Update messages with bot response
         setMessages((prevMessages) => [...prevMessages, { text: botResponse, sender: 'bot' }]);
       } catch (error) {
-        // Enhanced error logging
         console.error('Error generating response:', error);
         setMessages((prevMessages) => [
           ...prevMessages,
@@ -33,38 +35,39 @@ function App() {
     }
   };
 
+  // Scroll to the bottom of the messages when they change
+  useEffect(() => {
+    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
-    <div className="chat-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#e9ecef' }}>
-      <div style={{ border: '2px solid #007bff', borderRadius: '10px', padding: '20px', width: '400px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)', backgroundColor: '#ffffff' }}>
-        <h2 style={{ textAlign: 'center', color: '#007bff', marginBottom: '20px' }}>Chatbot</h2>
-        <div className="messages" style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '10px', padding: '10px', border: '1px solid #ced4da', borderRadius: '5px', backgroundColor: '#f8f9fa' }}>
+    <div className="flex justify-center items-center h-screen bg-gray-900">
+      <div className="w-full max-w-md bg-gray-800 rounded-lg shadow-lg p-6">
+        <h2 className="text-center text-white text-xl mb-4">What can I help with?</h2>
+        <div className="messages max-h-72 overflow-y-auto mb-4 p-3 border border-gray-700 rounded-lg bg-gray-700">
           {messages.map((msg, index) => (
-            <div key={index} className={msg.sender} style={{ textAlign: msg.sender === 'user' ? 'right' : 'left', marginBottom: '10px' }}>
-              <div style={{
-                display: 'inline-block',
-                padding: '10px 15px',
-                borderRadius: '20px',
-                margin: '5px',
-                backgroundColor: msg.sender === 'user' ? '#007bff' : '#e2e3e5',
-                color: msg.sender === 'user' ? '#fff' : '#000',
-                boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
-                maxWidth: '80%', // Limit the width of the message bubbles
-                wordWrap: 'break-word' // Ensure long words break to the next line
-              }}>
+            <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
+              <div className={`px-4 py-2 rounded-lg shadow ${
+                msg.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-600 text-white'
+              }`}>
                 {msg.text}
               </div>
             </div>
           ))}
+          <div ref={endOfMessagesRef} /> {/* Reference for scrolling */}
         </div>
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()} // Changed onKeyPress to onKeyDown
-          style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ced4da', marginBottom: '10px', fontSize: '16px' }}
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          className="w-full px-4 py-2 mb-2 rounded-lg border border-gray-700 bg-gray-800 text-white"
           placeholder="Type your message..."
         />
-        <button onClick={handleSend} style={{ width: '100%', padding: '10px', borderRadius: '5px', border: 'none', backgroundColor: '#28a745', color: '#fff', cursor: 'pointer', fontSize: '16px', transition: 'background-color 0.3s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}>
+        <button
+          onClick={handleSend}
+          className="w-full px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-500 transition duration-300"
+        >
           Send
         </button>
       </div>
