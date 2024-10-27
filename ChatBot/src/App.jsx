@@ -39,12 +39,10 @@ function App() {
   };
 
   // Function to format the bot's response and make text bold where asterisks are present
-  const formatBotResponse = (response, userMessage) => {
+  const formatBotResponse = (response) => {
     // Replace asterisks with <strong> tags for bold text
     const formattedResponse = response.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
     return `
-      Hi there! You asked: "${userMessage}"
-      Here’s what I found:
       ${formattedResponse}
     `.trim(); // Trim to remove extra whitespace
   };
